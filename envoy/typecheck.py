@@ -98,3 +98,12 @@ def typecheck_env(
         if violation:
             result.violations.append(violation)
     return result
+
+
+def supported_types() -> List[str]:
+    """Return a sorted list of type hint names supported by the type checker.
+
+    Useful for generating help text, documentation, or validation of
+    user-supplied type hint strings before calling ``typecheck_env``.
+    """
+    return sorted(_SUPPORTED_TYPES)
