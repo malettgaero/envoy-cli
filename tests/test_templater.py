@@ -77,3 +77,14 @@ def test_duplicate_placeholders_deduplicated():
     env = {"A": "{{ X }}", "B": "{{ X }}_suffix"}
     result = render_env(env, {})
     assert result.unresolved.count("X") == 1
+
+
+def test_strict_mode_reports_all_missing_keys():
+    """Ensure TemplateError lists every unresolved key, not just the first."""
+    env = {"A": "{{ FOO }}", "B": "{{ BAR }}", "C": "{{ FOO }}_{{ BAZ }}"}
+    with pytest.raises(TemplateError) as exc_info:
+        render_env(env, {}, strict=True)
+    missing = exc_info.value.missing
+    assert set(missing) == {"FOO", "BAR", "BAZ"}
+    # Each missing key should appear exactly once (deduplicated)
+    assert len(missing) == len(set(missing))
