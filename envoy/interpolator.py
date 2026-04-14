@@ -72,6 +72,22 @@ def interpolate_env(
     return InterpolateResult(env=resolved, warnings=warnings)
 
 
+def has_references(value: str) -> bool:
+    """Return *True* if *value* contains any ``${VAR}`` or ``$VAR`` references.
+
+    Useful for quickly skipping interpolation on values that contain no
+    variable placeholders.
+
+    >>> has_references("hello world")
+    False
+    >>> has_references("hello $NAME")
+    True
+    >>> has_references("path=${BASE}/bin")
+    True
+    """
+    return bool(_BRACE_RE.search(value) or _BARE_RE.search(value))
+
+
 def _resolve(
     key: str,
     value: str,
@@ -80,6 +96,9 @@ def _resolve(
     strict: bool,
 ) -> tuple[str, List[InterpolationWarning]]:
     warnings: List[InterpolationWarning] = []
+
+    if not has_references(value):
+        return value, warnings
 
     def _replace(match: re.Match) -> str:  # type: ignore[type-arg]
         ref = match.group(1)
