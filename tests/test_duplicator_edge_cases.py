@@ -41,3 +41,12 @@ def test_only_blank_lines_returns_no_duplicates():
 def test_has_duplicates_property_false_when_empty():
     result = find_duplicates(["UNIQUE=yes"])
     assert result.has_duplicates is False
+
+
+def test_comment_lines_are_skipped():
+    """Lines starting with '#' should be treated as comments and not parsed as keys."""
+    lines = ["# FOO=comment", "FOO=real_value", "FOO=duplicate"]
+    result = find_duplicates(lines)
+    # The comment line must not be counted as a FOO entry
+    assert len(result.duplicates) == 1
+    assert result.duplicates[0].key == "FOO"
