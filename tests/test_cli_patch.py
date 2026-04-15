@@ -67,3 +67,11 @@ def test_patch_multiple_assignments(runner: CliRunner, tmp_env: Path) -> None:
     env = parse_env_file(tmp_env)
     assert env["APP"] == "a"
     assert env["PORT"] == "9000"
+
+
+def test_patch_missing_file_exits_nonzero(runner: CliRunner, tmp_path: Path) -> None:
+    """Patching a file that does not exist should exit with a non-zero status."""
+    missing = tmp_path / "nonexistent.env"
+    result = runner.invoke(patch_cmd, [str(missing), "APP=value"])
+    assert result.exit_code != 0
+    assert "error" in result.output.lower() or "no such" in result.output.lower()
