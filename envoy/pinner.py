@@ -41,6 +41,14 @@ class PinResult:
             lines.append(f"  - {v}")
         return "\n".join(lines)
 
+    def to_dict(self) -> dict:
+        """Serialise the result to a plain dictionary suitable for JSON output."""
+        return {
+            "passed": self.passed,
+            "checked": self.checked,
+            "violations": [v.to_dict() for v in self.violations],
+        }
+
 
 def pin_env(
     env: Dict[str, str],
