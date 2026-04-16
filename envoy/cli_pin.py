@@ -10,6 +10,19 @@ from envoy.parser import ParseError, parse_env_file
 from envoy.pinner import pin_env
 
 
+def parse_pin(raw: str) -> tuple[str, str]:
+    """Parse a single KEY=VALUE pin string into a (key, value) tuple.
+
+    Raises click.BadParameter if the format is invalid.
+    """
+    if "=" not in raw:
+        raise click.BadParameter(
+            f"Pin {raw!r} must be in KEY=VALUE format.", param_hint="--pin"
+        )
+    key, _, value = raw.partition("=")
+    return key.strip(), value
+
+
 @click.command("pin-check")
 @click.argument("env_file", type=click.Path(exists=True, dir_okay=False))
 @click.option(
@@ -30,14 +43,7 @@ from envoy.pinner import pin_env
 def pin_check_cmd(env_file: str, pins: tuple[str, ...], strict: bool) -> None:
     """Check that pinned KEY=VALUE pairs match exactly in ENV_FILE."""
     # Parse pin arguments
-    pin_map: dict[str, str] = {}
-    for raw in pins:
-        if "=" not in raw:
-            raise click.BadParameter(
-                f"Pin {raw!r} must be in KEY=VALUE format.", param_hint="--pin"
-            )
-        key, _, value = raw.partition("=")
-        pin_map[key.strip()] = value
+    pin_map: dict[str, str] = {key: value for key, value in (parse_pin(raw) for raw in pins)}
 
     # Load env file
     try:
