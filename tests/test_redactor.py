@@ -94,3 +94,11 @@ def test_empty_env_returns_empty_result():
     result = redact_env({})
     assert result.env == {}
     assert result.redacted_keys == []
+
+
+def test_explicit_keys_do_not_duplicate_redacted_keys():
+    """Explicitly listed keys should appear only once in redacted_keys even if
+    they also match an auto-detected pattern."""
+    env = _env(DB_PASSWORD="secret")
+    result = redact_env(env, keys=["DB_PASSWORD"])
+    assert result.redacted_keys.count("DB_PASSWORD") == 1
