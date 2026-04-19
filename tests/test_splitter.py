@@ -69,8 +69,7 @@ def test_summary_contains_file_count(base_env):
     result = split_env(
         base_env,
         {"^DB_": "db.env", "^REDIS_": "redis.env"},
-        default_file="other.env",
-    )
+        default_file    )
     assert "3" in result.summary()
 
 
@@ -91,3 +90,13 @@ def test_entry_to_dict_has_expected_keys(base_env):
     entry = result.entries[0]
     d = entry.to_dict()
     assert set(d.keys()) == {"key", "value", "source_file", "target_file"}
+
+
+def test_key_matched_by_first_matching_pattern(base_env):
+    """When a key matches multiple patterns, it should be assigned to the first match."""
+    result = split_env(
+        base_env,
+        {"^DB_": "db.env", "^DB_HOST": "override.env"},
+    )
+    assert "DB_HOST" in result.files["db.env"]
+    assert "override.env" not in result.files
